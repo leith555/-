@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام تسجيل حضور العمال</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>tailwind.config={theme:{extend:{colors:{primary:'#3b82f6',secondary:'#64748b'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :where([class^="ri-"])::before { content: "\f3c2"; }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f9fafb;
+        }
+        .camera-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        #cameraPreview, #capturedImage {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .map-container {
+            background-image: url('https://public.readdy.ai/gen_page/map_placeholder_1280x720.png');
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-white shadow-sm py-4">
+            <div class="container mx-auto px-4 flex justify-between items-center">
+                <h1 class="text-2xl font-['Pacifico'] text-primary">logo</h1>
+                <div class="flex items-center gap-4">
+                    <span class="text-gray-600">الخميس، 17 أبريل 2025</span>
+                    <div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-full">
+                        <i class="ri-user-line text-gray-600"></i>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">تسجيل حضور العمال</h2>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Camera Section -->
+                    <div class="space-y-6">
+                        <div class="camera-container aspect-[4/3] bg-gray-100">
+                            <video id="cameraPreview" class="hidden"></video>
+                            <img id="capturedImage" class="hidden" alt="الصورة الملتقطة">
+                            <div id="cameraPlaceholder" class="w-full h-full flex flex-col items-center justify-center">
+                                <div class="w-16 h-16 flex items-center justify-center bg-gray-200 rounded-full mb-4">
+                                    <i class="ri-camera-line text-gray-500 ri-2x"></i>
+                                </div>
+                                <p class="text-gray-500">الرجاء تفعيل الكاميرا للتقاط صورة</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-4">
+                            <button id="startCameraBtn" class="flex-1 bg-primary text-white py-3 px-4 !rounded-button flex items-center justify-center gap-2 whitespace-nowrap">
+                                <div class="w-5 h-5 flex items-center justify-center">
+                                    <i class="ri-camera-line"></i>
+                                </div>
+                                <span>تفعيل الكاميرا</span>
+                            </button>
+                            
+                            <button id="captureBtn" class="flex-1 bg-primary text-white py-3 px-4 !rounded-button hidden whitespace-nowrap">
+                                <span>التقاط صورة</span>
+                            </button>
+                            
+                            <button id="retakeBtn" class="flex-1 border border-gray-300 text-gray-700 py-3 px-4 !rounded-button hidden whitespace-nowrap">
+                                <span>إعادة التقاط</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Information Section -->
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-800 mb-4">معلومات التسجيل</h3>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-md">
+                                        <i class="ri-time-line text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">الوقت الحالي</p>
+                                        <p id="currentTime" class="font-medium">10:45 صباحًا</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-md">
+                                        <i class="ri-calendar-line text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">التاريخ</p>
+                                        <p id="currentDate" class="font-medium">17/04/2025</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-md">
+                                        <i class="ri-map-pin-line text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">الموقع الجغرافي</p>
+                                        <p id="locationCoords" class="font-medium text-sm">جاري تحديد الموقع...</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-md">
+                                        <i class="ri-map-2-line text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">عنوان الموقع</p>
+                                        <p id="locationAddress" class="font-medium text-sm">جاري تحديد العنوان...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="map-container h-40 rounded-md overflow-hidden"></div>
+                        
+                        <div id="statusMessage" class="hidden p-3 rounded-md bg-green-100 text-green-700">
+                            تم تسجيل الحضور بنجاح!
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 flex justify-end gap-4">
+                    <button id="cancelBtn" class="border border-gray-300 text-gray-700 py-3 px-6 !rounded-button whitespace-nowrap">
+                        إلغاء
+                    </button>
+                    <button id="submitBtn" class="bg-primary text-white py-3 px-6 !rounded-button flex items-center justify-center gap-2 whitespace-nowrap" disabled>
+                        <span>تسجيل الحضور</span>
+                        <div id="loadingIndicator" class="hidden w-5 h-5 flex items-center justify-center">
+                            <i class="ri-loader-4-line animate-spin"></i>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="bg-white border-t py-6 mt-8">
+            <div class="container mx-auto px-4 text-center text-gray-600">
+                <p>© 2025 نظام تسجيل حضور العمال. جميع الحقوق محفوظة.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Permission Modal -->
+    <div id="permissionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">أذونات مطلوبة</h3>
+            <p class="text-gray-600 mb-6">يحتاج النظام إلى الوصول إلى الكاميرا وخدمات الموقع لتسجيل حضورك. الرجاء السماح بالوصول عند طلب ذلك.</p>
+            <div class="flex justify-end">
+                <button id="permissionBtn" class="bg-primary text-white py-2 px-4 !rounded-button whitespace-nowrap">
+                    فهمت
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const startCameraBtn = document.getElementById('startCameraBtn');
+            const captureBtn = document.getElementById('captureBtn');
+            const retakeBtn = document.getElementById('retakeBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const cameraPreview = document.getElementById('cameraPreview');
+            const capturedImage = document.getElementById('capturedImage');
+            const cameraPlaceholder = document.getElementById('cameraPlaceholder');
+            const currentTimeEl = document.getElementById('currentTime');
+            const currentDateEl = document.getElementById('currentDate');
+            const locationCoordsEl = document.getElementById('locationCoords');
+            const locationAddressEl = document.getElementById('locationAddress');
+            const statusMessage = document.getElementById('statusMessage');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const permissionModal = document.getElementById('permissionModal');
+            const permissionBtn = document.getElementById('permissionBtn');
+            
+            // Variables
+            let stream = null;
+            let hasImage = false;
+            let locationData = null;
+            
+            // Update time and date
+            function updateDateTime() {
+                const now = new Date();
+                
+                // Time format for Arabic locale
+                let hours = now.getHours();
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'مساءً' : 'صباحًا';
+                hours = hours % 12;
+                hours = hours ? hours : 12; // the hour '0' should be '12'
+                currentTimeEl.textContent = `${hours}:${minutes} ${ampm}`;
+                
+                // Date format for Arabic locale (DD/MM/YYYY)
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = now.getFullYear();
+                currentDateEl.textContent = `${day}/${month}/${year}`;
+            }
+            
+            // Update location
+            function updateLocation() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const { latitude, longitude } = position.coords;
+                            locationData = { latitude, longitude };
+                            locationCoordsEl.textContent = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+                            
+                            // Simulate getting address (in a real app, you would use a geocoding service)
+                            setTimeout(() => {
+                                locationAddressEl.textContent = 'شارع الملك فهد، الرياض، المملكة العربية السعودية';
+                            }, 1000);
+                        },
+                        (error) => {
+                            console.error('Error getting location:', error);
+                            locationCoordsEl.textContent = 'تعذر الوصول إلى الموقع';
+                            locationAddressEl.textContent = 'تعذر الوصول إلى العنوان';
+                        }
+                    );
+                } else {
+                    locationCoordsEl.textContent = 'خدمة الموقع غير متوفرة';
+                    locationAddressEl.textContent = 'خدمة الموقع غير متوفرة';
+                }
+            }
+            
+            // Initialize camera
+            async function startCamera() {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: 'user' }, 
+                        audio: false 
+                    });
+                    
+                    cameraPreview.srcObject = stream;
+                    cameraPreview.classList.remove('hidden');
+                    cameraPlaceholder.classList.add('hidden');
+                    capturedImage.classList.add('hidden');
+                    
+                    startCameraBtn.classList.add('hidden');
+                    captureBtn.classList.remove('hidden');
+                    retakeBtn.classList.add('hidden');
+                    
+                    cameraPreview.play();
+                } catch (error) {
+                    console.error('Error accessing camera:', error);
+                    alert('تعذر الوصول إلى الكاميرا. الرجاء التأكد من منح الإذن.');
+                }
+            }
+            
+            // Capture image
+            function captureImage() {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                
+                // Set canvas dimensions to match video
+                canvas.width = cameraPreview.videoWidth;
+                canvas.height = cameraPreview.videoHeight;
+                
+                // Draw video frame to canvas
+                context.drawImage(cameraPreview, 0, 0, canvas.width, canvas.height);
+                
+                // Convert to image
+                const imageDataUrl = canvas.toDataURL('image/png');
+                capturedImage.src = imageDataUrl;
+                
+                // Show captured image
+                cameraPreview.classList.add('hidden');
+                capturedImage.classList.remove('hidden');
+                
+                // Update buttons
+                captureBtn.classList.add('hidden');
+                retakeBtn.classList.remove('hidden');
+                
+                // Enable submit button
+                submitBtn.disabled = false;
+                hasImage = true;
+                
+                // Stop camera stream
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
+                }
+            }
+            
+            // Submit attendance
+            function submitAttendance() {
+                if (!hasImage) {
+                    alert('الرجاء التقاط صورة أولاً');
+                    return;
+                }
+                
+                // Show loading
+                loadingIndicator.classList.remove('hidden');
+                submitBtn.disabled = true;
+                
+                // Simulate API call
+                setTimeout(() => {
+                    // Hide loading
+                    loadingIndicator.classList.add('hidden');
+                    
+                    // Show success message
+                    statusMessage.classList.remove('hidden');
+                    statusMessage.textContent = 'تم تسجيل الحضور بنجاح!';
+                    statusMessage.classList.remove('bg-red-100', 'text-red-700');
+                    statusMessage.classList.add('bg-green-100', 'text-green-700');
+                    
+                    // Reset form after 3 seconds
+                    setTimeout(resetForm, 3000);
+                }, 2000);
+            }
+            
+            // Reset form
+            function resetForm() {
+                // Reset camera
+                cameraPreview.classList.add('hidden');
+                capturedImage.classList.add('hidden');
+                cameraPlaceholder.classList.remove('hidden');
+                
+                // Reset buttons
+                startCameraBtn.classList.remove('hidden');
+                captureBtn.classList.add('hidden');
+                retakeBtn.classList.add('hidden');
+                
+                // Reset status
+                statusMessage.classList.add('hidden');
+                submitBtn.disabled = true;
+                hasImage = false;
+                
+                // Stop any active stream
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
+                }
+            }
+            
+            // Event listeners
+            startCameraBtn.addEventListener('click', () => {
+                permissionModal.classList.remove('hidden');
+            });
+            
+            permissionBtn.addEventListener('click', () => {
+                permissionModal.classList.add('hidden');
+                startCamera();
+                updateLocation();
+            });
+            
+            captureBtn.addEventListener('click', captureImage);
+            retakeBtn.addEventListener('click', startCamera);
+            submitBtn.addEventListener('click', submitAttendance);
+            cancelBtn.addEventListener('click', resetForm);
+            
+            // Initialize
+            updateDateTime();
+            setInterval(updateDateTime, 60000); // Update time every minute
+        });
+    </script>
+</body>
+</html>
